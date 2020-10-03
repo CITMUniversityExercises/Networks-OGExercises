@@ -10,6 +10,7 @@ void ModuleTaskManager::threadMain()
 		// - Retrieve a task from scheduledTasks
 		// - Execute it
 		// - Insert it into finishedTasks
+		Task* task;
 
 		{ // begin critical section
 
@@ -18,14 +19,20 @@ void ModuleTaskManager::threadMain()
 			while (scheduledTasks.size() == 0)
 			{
 				event.wait(lock); // release mutex while waiting
+
+				if (exitFlag)
+					return;
 			}
 
-			Task* task = scheduledTasks.front();
-			task->execute();
+			task = scheduledTasks.front();
 			scheduledTasks.pop();
-			finishedTasks.push(task);
+
 		} // end critical section
 
+		task->execute();
+
+		std::unique_lock<std::mutex> lock(mtx);
+		finishedTasks.push(task);	
 	}
 }
 
@@ -44,6 +51,7 @@ bool ModuleTaskManager::init()
 bool ModuleTaskManager::update()
 {
 	// TODO 4: Dispatch all finished tasks to their owner module (use Module::onTaskFinished() callback)
+	std::unique_lock<std::mutex> lock(mtx);
 
 	while (finishedTasks.size() > 0)
 	{
@@ -58,6 +66,11 @@ bool ModuleTaskManager::update()
 bool ModuleTaskManager::cleanUp()
 {
 	// TODO 5: Notify all threads to finish and join them
+
+	{
+		std::unique_lock<std::mutex> lock(mtx);
+		exitFlag = true;
+	}
 
 	event.notify_all();
 
@@ -86,8 +99,12 @@ bool ModuleTaskManager::cleanUp()
 
 void ModuleTaskManager::scheduleTask(Task *task, Module *owner)
 {
-	task->owner = owner;
 	// TODO 2: Insert the task into scheduledTasks so it is executed by some thread
-	scheduledTasks.push(task);
+	{
+		std::unique_lock<std::mutex> lock(mtx);
+		task->owner = owner;
+		scheduledTasks.push(task);
+	}
+
 	event.notify_one(); // notify a thread
 }
