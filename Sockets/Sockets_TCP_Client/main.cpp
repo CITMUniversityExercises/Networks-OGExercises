@@ -80,16 +80,37 @@ int main(int argc, char** argv)
 		sk = socket(AF_INET, SOCK_STREAM, 0);
 
 		// --- Set address and port ---
-		sockaddr_in remoteAddr;
-		remoteAddr.sin_family = AF_INET; // IPv4
-		remoteAddr.sin_port = htons(port); // Port
-
-		//remoteAddr.sin_addr.S_un.S_un_b.s_b1 = 192;
-		//remoteAddr.sin_addr.S_un.S_un_b.s_b2 = 168;
-		//remoteAddr.sin_addr.S_un.S_un_b.s_b3 = 1;
-		//remoteAddr.sin_addr.S_un.S_un_b.s_b4 = 33;
+		sockaddr_in serverAddr; // client
+		serverAddr.sin_family = AF_INET; // IPv4
+		serverAddr.sin_port = htons(port); // Port
 		const char* remoteAddrStr = "127.0.0.1";
-		inet_pton(AF_INET, remoteAddrStr, &remoteAddr.sin_addr);
+		inet_pton(AF_INET, remoteAddrStr, &serverAddr.sin_addr);
+
+		// --- Send message to server and receive notification ---
+		char* buffer = new char[6];
+		int iResult;
+
+		// --- Establish connection to server ---
+		connect(sk, (const struct sockaddr*)&serverAddr, sizeof(serverAddr));
+
+		for (unsigned int i = 0; i < 5; ++i)
+		{
+			// --- Send message to server ---
+			iResult = send(sk, "Hello", 6, 0);
+
+			if (iResult == SOCKET_ERROR)
+				LogError();
+
+			// --- Receive message from server ---
+			iResult = recv(sk, buffer, 6, 0);
+
+			if (iResult == SOCKET_ERROR)
+				LogError();
+
+			std::cout << "Client received:" << buffer << std::endl;
+		}
+
+		delete[] buffer;
 
 		system("pause");
 	}
