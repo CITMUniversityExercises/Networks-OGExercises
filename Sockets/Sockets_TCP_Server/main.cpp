@@ -123,6 +123,9 @@ int main(int argc, char** argv)
 				LogError();
 		}
 
+		shutdown(connected_sk, SD_BOTH);
+		closesocket(connected_sk);
+
 		delete[] buffer;
 
 		system("pause");
