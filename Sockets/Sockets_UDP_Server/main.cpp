@@ -10,7 +10,7 @@
 #pragma comment(lib, "ws2_32.lib")
 
 SOCKET sk;
-unsigned int port = 7777;
+unsigned int port = 7777; // server port
 
 
 // --- Utilities ---
@@ -80,10 +80,10 @@ int main(int argc, char** argv)
 		sk = socket(AF_INET, SOCK_DGRAM, 0);
 
 		// --- Set address and port ---
-		sockaddr_in bindAddr;
-		bindAddr.sin_family = AF_INET; // IPv4
-		bindAddr.sin_port = htons(port); // Port
-		bindAddr.sin_addr.S_un.S_addr = INADDR_ANY; // Any local IP address
+		sockaddr_in serverAddr; // server
+		serverAddr.sin_family = AF_INET; // IPv4
+		serverAddr.sin_port = htons(port); // Port
+		serverAddr.sin_addr.S_un.S_addr = INADDR_ANY; // Any local IP address
 
 		// --- Make sure we can reuse IP and port ---
 		int enable = 1;
@@ -94,12 +94,30 @@ int main(int argc, char** argv)
 			LogError();
 
 		// --- Bind socket to specific address ---
-		iResult = bind(sk, (const struct sockaddr*)&bindAddr, sizeof(bindAddr));
+		iResult = bind(sk, (const struct sockaddr*)&serverAddr, sizeof(serverAddr));
 
 		if (iResult != NO_ERROR)
 		{
 			LogError();
 		}
+
+		// --- Receive message and send notification ---
+		char* buffer = new char[6];
+		sockaddr_in clientAddr; // client
+		int addrSize = sizeof(sockaddr_in);
+
+		for (unsigned int i = 0; i < 5; ++i)
+		{
+			// --- Receive message from client ---
+			recvfrom(sk, buffer, 6, 0, (struct sockaddr*)&clientAddr, &addrSize); 
+
+			std::cout << "Server received:" << buffer << std::endl;
+
+			// --- Send message to client ---
+			sendto(sk, "World", 6, 0, (const struct sockaddr*)&clientAddr, sizeof(clientAddr));
+		}
+
+	    delete[] buffer;
 
 		system("pause");
 	}
