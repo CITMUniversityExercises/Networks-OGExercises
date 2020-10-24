@@ -90,13 +90,23 @@ int main(int argc, char** argv)
 		char* buffer = new char[6];
 		int iResult;
 
+		// --- Get CPU frequency ---
+		double PCFreq = 0.0;
+		LARGE_INTEGER li;
+		QueryPerformanceFrequency(&li);
+		PCFreq = double(li.QuadPart) / 1000.0;
+
 		// --- Establish connection to server ---
 		connect(sk, (const struct sockaddr*)&serverAddr, sizeof(serverAddr));
 
 		for (unsigned int i = 0; i < 5; ++i)
 		{
+			LARGE_INTEGER start_time;
+			LARGE_INTEGER end_time;
+			QueryPerformanceCounter(&start_time); 
+
 			// --- Send message to server ---
-			iResult = send(sk, "Hello", 6, 0);
+			iResult = send(sk, "PING", 6, 0);
 
 			if (iResult == SOCKET_ERROR)
 				LogError();
@@ -107,6 +117,9 @@ int main(int argc, char** argv)
 			if (iResult == SOCKET_ERROR)
 				LogError();
 
+			QueryPerformanceCounter(&end_time);
+
+			std::cout << "Time elapsed: " << (end_time.QuadPart - start_time.QuadPart) / PCFreq << " milliseconds" << std::endl;
 			std::cout << "Client received:" << buffer << std::endl;
 		}
 

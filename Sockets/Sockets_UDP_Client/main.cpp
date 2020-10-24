@@ -86,6 +86,12 @@ int main(int argc, char** argv)
 		const char* remoteAddrStr = "127.0.0.1"; 
 		inet_pton(AF_INET, remoteAddrStr, &serverAddr.sin_addr);
 
+		// --- Get CPU frequency ---
+		double PCFreq = 0.0;
+		LARGE_INTEGER li;
+		QueryPerformanceFrequency(&li);
+		PCFreq = double(li.QuadPart) / 1000.0;
+
 		// --- Send message to server and receive notification ---
 		char* buffer = new char[6];
 		//sockaddr_in serverAddr;
@@ -93,12 +99,19 @@ int main(int argc, char** argv)
 
 		for (unsigned int i = 0; i < 5; ++i)
 		{
+			LARGE_INTEGER start_time;
+			LARGE_INTEGER end_time;
+			QueryPerformanceCounter(&start_time);
+
 			// --- Send message to server ---
-			sendto(sk, "Hello", 6, 0, (const struct sockaddr*)&serverAddr, sizeof(serverAddr));
+			sendto(sk, "PING", 6, 0, (const struct sockaddr*)&serverAddr, sizeof(serverAddr));
 
 			// --- Receive message from server ---
 			recvfrom(sk, buffer, 6, 0, nullptr, nullptr); // not storing anything since we already know the server's address
 
+			QueryPerformanceCounter(&end_time);
+
+			std::cout << "Time elapsed: " << (end_time.QuadPart - start_time.QuadPart) / PCFreq << " milliseconds" << std::endl;
 			std::cout << "Client received:" << buffer << std::endl;
 		}
 

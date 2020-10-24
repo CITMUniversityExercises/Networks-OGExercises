@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 			std::cout << "Server received:" << buffer << std::endl;
 
 			// --- Send message to client ---
-			sendto(sk, "World", 6, 0, (const struct sockaddr*)&clientAddr, sizeof(clientAddr));
+			sendto(sk, "PONG", 6, 0, (const struct sockaddr*)&clientAddr, sizeof(clientAddr));
 		}
 
 	    delete[] buffer;

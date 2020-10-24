@@ -104,7 +104,8 @@ int main(int argc, char** argv)
 
 		// --- Accept connection from client ---
 		listen(sk, 1);
-		SOCKET connected_sk = accept(sk, nullptr, nullptr); // socket is already aware of client address, no need to store anything
+		sockaddr clientAddr;
+		SOCKET connected_sk = accept(sk, &clientAddr, nullptr); // socket is already aware of client address, no need to store anything
 
 		for (unsigned int i = 0; i < 5; ++i)
 		{
@@ -117,7 +118,7 @@ int main(int argc, char** argv)
 			std::cout << "Server received:" << buffer << std::endl;
 
 			// --- Send message to client ---
-			iResult = send(connected_sk, "World", 6, 0);
+			iResult = send(connected_sk, "PONG", 6, 0);
 
 			if (iResult == SOCKET_ERROR)
 				LogError();
