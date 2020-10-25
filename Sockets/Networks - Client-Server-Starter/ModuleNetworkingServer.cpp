@@ -14,6 +14,12 @@ bool ModuleNetworkingServer::start(int port)
 	// - Create the listenSocket
 	listenSocket = socket(AF_INET, SOCK_STREAM, 0);
 
+	if (listenSocket == INVALID_SOCKET)
+	{
+		reportError("ModuleNetworkingServer::start() - error on create socket");
+		return false;
+	}
+
 	// --- Set address and port ---
 	sockaddr_in serverAddr; // server
 	serverAddr.sin_family = AF_INET; // IPv4
