@@ -58,7 +58,7 @@ bool ModuleNetworking::preUpdate()
 
 	// NOTE(jesus): You can use this temporary buffer to store data from recv()
 	const uint32 incomingDataBufferSize = Kilobytes(1);
-	byte incomingDataBuffer[incomingDataBufferSize];
+	byte incomingDataBuffer[incomingDataBufferSize]{"\0"};
 
 	int available_ops = 0;
 	// TODO(jesus): select those sockets that have a read operation available
@@ -108,7 +108,10 @@ bool ModuleNetworking::preUpdate()
 				SOCKET connected_sk = accept(s, (struct sockaddr*)&clientAddr, &addrsize);
 
 				if (connected_sk == INVALID_SOCKET)
+				{
+					reportError("ModuleNetworking::preUpdate() - error on accept");
 					continue;
+				}
 
 				onSocketConnected(connected_sk, clientAddr);
 				addSocket(connected_sk);

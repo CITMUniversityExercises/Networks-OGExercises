@@ -11,6 +11,11 @@ bool  ModuleNetworkingClient::start(const char * serverAddressStr, int serverPor
 	// NOTE: Had to change name of .h var from socket to sk due to overlapping function name
 	sk = socket(AF_INET, SOCK_STREAM, 0);
 
+	if (sk == INVALID_SOCKET)
+	{
+		reportError("ModuleNetworkingClient::start() - error on create socket");
+		return false;
+	}
 
 	// - Create the remote address object
 	// --- Set address and port ---

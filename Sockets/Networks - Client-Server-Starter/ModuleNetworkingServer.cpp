@@ -122,10 +122,7 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, byte * data)
 	{
 		if (connectedSocket.socket == socket)
 		{
-			std::string tmp_data = (const char*)data;
-			tmp_data = tmp_data.substr(0,tmp_data.find_first_of("Ì"));
-
-			connectedSocket.playerName = tmp_data;
+			connectedSocket.playerName = (const char*)data;
 		}
 	}
 }
